@@ -84,12 +84,20 @@ export const useBadgeNFT = (address?: Address) => {
   });
 };
 
-export const useBadgeHistory = <T>(address?: Address) => {
-  return useQuery(['fetch_badge_history', address], async () => {
+export const useBadgeHistory = <T>(address?: Address, options?: { first?: number; after?: string | null }) => {
+  const queryKey =
+    options?.first == null && options?.after == null
+      ? ['fetch_badge_history', address]
+      : ['fetch_badge_history', address, options.first, options.after];
+
+  return useQuery(queryKey, async () => {
     if (!address) return {} as T;
+
     const variables = {
       address: address,
+      // TODO: When GraphQL schema is available, add pagination variables (first, after) to historyQuery.
     };
+
     const data = await client.request(historyQuery, variables);
     return data as T;
   });

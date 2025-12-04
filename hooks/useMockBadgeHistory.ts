@@ -10,6 +10,8 @@ type PageInfo = {
 
 export type MockHistoryResult = HistoryResult & {
   pageInfo: PageInfo;
+  // Total is added for stable pagination UI; real API may or may not return it.
+  total: number;
 };
 
 const DEFAULT_PAGE_SIZE = 5;
@@ -41,6 +43,7 @@ export const useMockBadgeHistory = (address?: Address, options?: { first?: numbe
         return {
           user: { bridgeTxs: [] },
           pageInfo: { hasNextPage: false, endCursor: null },
+          total: 0,
         };
       }
 
@@ -49,6 +52,7 @@ export const useMockBadgeHistory = (address?: Address, options?: { first?: numbe
       return {
         user: { bridgeTxs },
         pageInfo,
+        total: MOCK_BRIDGE_TXS.length,
       };
     },
     {

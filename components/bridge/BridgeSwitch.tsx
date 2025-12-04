@@ -18,6 +18,7 @@ import {
   useBridgeContract,
   useNFTContract,
 } from '@/hooks/bridge';
+import { useMockBadgeHistory } from '@/hooks/useMockBadgeHistory';
 import { BadgeInfo, COMMUNITY_NFT_CAMPAIGN_ID, GalxeBadge, NFTQueryResult, P12_COMMUNITY_BADGE } from '@/constants';
 import { groupBy } from 'lodash-es';
 import {
@@ -31,8 +32,17 @@ import { toast } from 'react-toastify';
 import { shortenHash } from '@/utils';
 import ChainIcon from './ChainIcon';
 import ReactGA from 'react-ga4';
+import Pagination from 'rc-pagination';
 
 const historyColumnHelper = createColumnHelper<BridgeTxs>();
+// Keep API/Mock shapes aligned: pageInfo/total are optional because real API may not return them.
+type HistoryWithPageInfo = HistoryResult & {
+  pageInfo?: {
+    hasNextPage: boolean;
+    endCursor: string | null;
+  };
+  total?: number;
+};
 
 export default function BridgeSwitch() {
   const [selectedBadge, setSelectedBadge] = useState<GalxeBadge | null>(null);
@@ -47,7 +57,15 @@ export default function BridgeSwitch() {
   const { address } = useAccount();
 
   const { data, refetch } = useBadgeNFT(address);
-  const { data: historyData, isLoading } = useBadgeHistory<HistoryResult>(address);
+  // Use mock history while the GraphQL endpoint is unavailable. Set NEXT_PUBLIC_USE_MOCK_HISTORY=false to hit the real API.
+  const useMockHistory = process.env.NEXT_PUBLIC_USE_MOCK_HISTORY !== 'false';
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 5;
+  const afterCursor = page > 1 ? String(pageSize * (page - 1) - 1) : null;
+
+  const { data: historyData, isLoading } = useMockHistory
+    ? useMockBadgeHistory(address, { first: pageSize, after: afterCursor })
+    : useBadgeHistory<HistoryWithPageInfo>(address);
   const [orderData, setOrderData] = useState<BridgeTxs[]>([]);
 
   const [nftOwned, setNFTOwned] = useState<GalxeBadge[][]>([]);
@@ -117,10 +135,8 @@ export default function BridgeSwitch() {
 
   useEffect(() => {
     const data: BridgeTxs[] = historyData?.user?.bridgeTxs ?? [];
-    if (data.length > 0) {
-      data.sort((a, b) => b.timestamp - a.timestamp);
-      setOrderData(data);
-    }
+    const sorted = [...data].sort((a, b) => b.timestamp - a.timestamp);
+    setOrderData(sorted);
   }, [historyData]);
 
   useEffect(() => {
@@ -801,6 +817,22 @@ export default function BridgeSwitch() {
       <div className="my-7.5 border-b border-[#4e4e50]"></div>
       <div className="text-base font-semibold">Bridge History</div>
       <Table loading={isLoading} className="mt-6 max-w-[95vw] overflow-x-auto" dataSource={orderData} columns={gamerColumns} />
+      {!isLoading && (historyData?.pageInfo?.hasNextPage || page > 1) && (
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            simple
+            current={page}
+            pageSize={pageSize}
+            // Prefer total when provided (mock). Fallbacks keep UI usable on cursor-only APIs.
+            total={
+              historyData?.total ??
+              historyData?.user?.bridgeTxs?.length ??
+              (page - 1) * pageSize + orderData.length + (historyData?.pageInfo?.hasNextPage ? 1 : 0)
+            }
+            onChange={(p) => setPage(p)}
+          />
+        </div>
+      )}
     </div>
   );
 }

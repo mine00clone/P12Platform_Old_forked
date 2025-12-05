@@ -141,6 +141,13 @@ export default function BridgeSwitch() {
   }, [historyData]);
 
   useEffect(() => {
+    // Reset pagination when wallet disconnects to hide stale pager state.
+    if (!address) {
+      setPage(1);
+    }
+  }, [address]);
+
+  useEffect(() => {
     if (!selectedBadge || !NFTContract || !address || chain?.id !== selectedBadge.chainId) return;
     const bridgeAddress = selectedBadge.chainId === polygon.id ? BADGE_BRIDGE_ADDRESS : BADGE_BRIDGE_ADDRESS_BSC;
     NFTContract.read
@@ -829,7 +836,7 @@ export default function BridgeSwitch() {
           <span className="ml-2">Loading history...</span>
         </div>
       )}
-      {(historyData?.pageInfo?.hasNextPage || page > 1 || isFetching) && (
+      {address && (historyData?.pageInfo?.hasNextPage || page > 1 || isFetching) && (
         <div className="mt-4 flex justify-center">
           <Pagination
             simple

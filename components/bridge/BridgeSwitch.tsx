@@ -852,6 +852,7 @@ export default function BridgeSwitch() {
               (page - 1) * pageSize + orderData.length + (historyData?.pageInfo?.hasNextPage ? 1 : 0)
             }
             onChange={(p) => setPage(p)}
+            disabled={isFetching || isLoading}
           />
         </div>
       )}

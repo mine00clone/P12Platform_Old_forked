@@ -64,9 +64,12 @@ export default function BridgeSwitch() {
   const pageSize = 5;
   const afterCursor = page > 1 ? String(pageSize * (page - 1) - 1) : null;
 
-  const { data: historyData, isLoading, isFetching } = useMockHistory
-    ? useMockBadgeHistory(address, { first: pageSize, after: afterCursor })
-    : useBadgeHistory<HistoryWithPageInfo>(address);
+  const mockHistoryQuery = useMockBadgeHistory(useMockHistory ? address : undefined, { first: pageSize, after: afterCursor });
+  const realHistoryQuery = useBadgeHistory<HistoryWithPageInfo>(useMockHistory ? undefined : address);
+
+  const historyData = useMockHistory ? mockHistoryQuery.data : realHistoryQuery.data;
+  const isLoading = useMockHistory ? mockHistoryQuery.isLoading : realHistoryQuery.isLoading;
+  const isFetching = useMockHistory ? mockHistoryQuery.isFetching : realHistoryQuery.isFetching;
   const [orderData, setOrderData] = useState<BridgeTxs[]>([]);
 
   const [nftOwned, setNFTOwned] = useState<GalxeBadge[][]>([]);
@@ -168,7 +171,7 @@ export default function BridgeSwitch() {
       .catch((error) => {
         console.log(error);
       });
-  }, [selectedBadge, chain?.id, address]);
+  }, [selectedBadge, chain?.id, address, NFTContract]);
 
   useEffect(() => {
     const galxeBadges: GalxeBadge[] = ((data as any)?.user as NFTQueryResult)?.galxeBadges;

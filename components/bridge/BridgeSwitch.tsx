@@ -827,35 +827,37 @@ export default function BridgeSwitch() {
 
       <div className="my-7.5 border-b border-[#4e4e50]"></div>
       <div className="text-base font-semibold">Bridge History</div>
-      <Table
-        loading={isLoading && !historyData}
-        className="mt-6 max-w-[95vw] overflow-x-auto"
-        dataSource={orderData}
-        columns={gamerColumns}
-      />
-      {isFetching && !isLoading && (
-        <div className="mt-2 flex items-center justify-center text-xs text-gray-400">
-          <Loading size={8} className="!p-0" />
-          <span className="ml-2">Loading history...</span>
+      <div className="mt-6 max-w-[95vw] overflow-x-auto">
+        <div className="relative flex flex-col" style={{ minHeight: 340 }}>
+          <Table loading={isLoading && !historyData} dataSource={orderData} columns={gamerColumns} />
+          <div className="h-6" aria-hidden />
+          {address && (historyData?.pageInfo?.hasNextPage || page > 1 || isFetching) && (
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                simple
+                current={page}
+                pageSize={pageSize}
+                // Prefer total when provided (mock). Fallbacks keep UI usable on cursor-only APIs.
+                total={
+                  historyData?.total ??
+                  historyData?.user?.bridgeTxs?.length ??
+                  (page - 1) * pageSize + orderData.length + (historyData?.pageInfo?.hasNextPage ? 1 : 0)
+                }
+                onChange={(p) => setPage(p)}
+                disabled={isFetching || isLoading}
+              />
+            </div>
+          )}
+          <div className="mt-2 flex h-6 items-center justify-center text-xs text-gray-400">
+            {isFetching && !isLoading && (
+              <>
+                <Loading size={16} className="!p-0" />
+                <span className="ml-2">Loading history...</span>
+              </>
+            )}
+          </div>
         </div>
-      )}
-      {address && (historyData?.pageInfo?.hasNextPage || page > 1 || isFetching) && (
-        <div className="mt-4 flex justify-center">
-          <Pagination
-            simple
-            current={page}
-            pageSize={pageSize}
-            // Prefer total when provided (mock). Fallbacks keep UI usable on cursor-only APIs.
-            total={
-              historyData?.total ??
-              historyData?.user?.bridgeTxs?.length ??
-              (page - 1) * pageSize + orderData.length + (historyData?.pageInfo?.hasNextPage ? 1 : 0)
-            }
-            onChange={(p) => setPage(p)}
-            disabled={isFetching || isLoading}
-          />
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -85,6 +85,7 @@ export const useBadgeNFT = (address?: Address) => {
 };
 
 export const useBadgeHistory = <T>(address?: Address, options?: { first?: number; after?: string | null }) => {
+  // TODO: When GraphQL schema is available, align cursor/page params and ensure queryKey includes pagination (first/after).
   const queryKey =
     options?.first == null && options?.after == null
       ? ['fetch_badge_history', address]

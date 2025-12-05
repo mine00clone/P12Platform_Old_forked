@@ -9,9 +9,10 @@ type TableProps = {
   columns: any[];
   className?: string;
   loading?: boolean;
+  emptyText?: string;
 };
 
-export default function Table({ dataSource, columns, className, loading }: TableProps) {
+export default function Table({ dataSource, columns, className, loading, emptyText }: TableProps) {
   const data = useMemo(() => dataSource, [dataSource]);
   const { getRowModel, getHeaderGroups } = useReactTable({
     columns,
@@ -56,7 +57,7 @@ export default function Table({ dataSource, columns, className, loading }: Table
           ) : (
             <tr>
               <td colSpan={columns.length}>
-                <Empty />
+                <Empty text={emptyText} />
               </td>
             </tr>
           )}

@@ -56,7 +56,6 @@ export default function BridgeSwitch() {
   const bridgeContract = useBridgeContract({ chainId: selectedBadge?.chainId });
   const { chain } = useNetwork();
   const { address } = useAccount();
-
   const { data, refetch } = useBadgeNFT(address);
   // Use mock history while the GraphQL endpoint is unavailable. Set NEXT_PUBLIC_USE_MOCK_HISTORY=false to hit the real API.
   const useMockHistory = process.env.NEXT_PUBLIC_USE_MOCK_HISTORY !== 'false';
@@ -829,7 +828,12 @@ export default function BridgeSwitch() {
       <div className="text-base font-semibold">Bridge History</div>
       <div className="mt-6 max-w-[95vw] overflow-x-auto">
         <div className="relative flex flex-col" style={{ minHeight: 340 }}>
-          <Table loading={isLoading && !historyData} dataSource={orderData} columns={gamerColumns} />
+          <Table
+            loading={isLoading && !historyData}
+            dataSource={orderData}
+            columns={gamerColumns}
+            emptyText={address ? 'No bridge history yet' : undefined}
+          />
           <div className="h-6" aria-hidden />
           {address && (historyData?.pageInfo?.hasNextPage || page > 1 || isFetching) && (
             <div className="mt-4 flex justify-center">

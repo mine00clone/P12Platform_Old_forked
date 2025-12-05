@@ -4,7 +4,7 @@ import React from 'react';
  * Empty
  * @constructor
  */
-export default function Empty({ color }: { color?: string }) {
+export default function Empty({ color, text }: { color?: string; text?: string }) {
   return (
     <div className="my-8 text-center">
       <svg className="mx-auto mb-2" width="48" height="37" viewBox="0 0 48 37" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,7 +16,7 @@ export default function Empty({ color }: { color?: string }) {
         />
       </svg>
       <p className="mt-4 text-sm" style={{ color: color ?? '#4E4E50' }}>
-        No Data
+        {text ?? 'No Data'}
       </p>
     </div>
   );

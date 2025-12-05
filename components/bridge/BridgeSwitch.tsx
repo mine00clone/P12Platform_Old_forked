@@ -33,6 +33,7 @@ import { shortenHash } from '@/utils';
 import ChainIcon from './ChainIcon';
 import ReactGA from 'react-ga4';
 import Pagination from 'rc-pagination';
+import Loading from '../loading';
 
 const historyColumnHelper = createColumnHelper<BridgeTxs>();
 // Keep API/Mock shapes aligned: pageInfo/total are optional because real API may not return them.
@@ -63,7 +64,7 @@ export default function BridgeSwitch() {
   const pageSize = 5;
   const afterCursor = page > 1 ? String(pageSize * (page - 1) - 1) : null;
 
-  const { data: historyData, isLoading } = useMockHistory
+  const { data: historyData, isLoading, isFetching } = useMockHistory
     ? useMockBadgeHistory(address, { first: pageSize, after: afterCursor })
     : useBadgeHistory<HistoryWithPageInfo>(address);
   const [orderData, setOrderData] = useState<BridgeTxs[]>([]);
@@ -816,8 +817,19 @@ export default function BridgeSwitch() {
 
       <div className="my-7.5 border-b border-[#4e4e50]"></div>
       <div className="text-base font-semibold">Bridge History</div>
-      <Table loading={isLoading} className="mt-6 max-w-[95vw] overflow-x-auto" dataSource={orderData} columns={gamerColumns} />
-      {!isLoading && (historyData?.pageInfo?.hasNextPage || page > 1) && (
+      <Table
+        loading={isLoading && !historyData}
+        className="mt-6 max-w-[95vw] overflow-x-auto"
+        dataSource={orderData}
+        columns={gamerColumns}
+      />
+      {isFetching && !isLoading && (
+        <div className="mt-2 flex items-center justify-center text-xs text-gray-400">
+          <Loading size={8} className="!p-0" />
+          <span className="ml-2">Loading history...</span>
+        </div>
+      )}
+      {(historyData?.pageInfo?.hasNextPage || page > 1 || isFetching) && (
         <div className="mt-4 flex justify-center">
           <Pagination
             simple

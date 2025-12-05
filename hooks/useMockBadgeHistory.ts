@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Address } from 'wagmi';
 import { MOCK_BRIDGE_TXS } from '@/constants/mockBridgeHistory';
 import { HistoryResult, BridgeTxs } from './bridge';
@@ -35,6 +35,7 @@ export const useMockBadgeHistory = (address?: Address, options?: { first?: numbe
     options?.first == null && options?.after == null
       ? ['mock_fetch_badge_history', address]
       : ['mock_fetch_badge_history', address, options.first, options.after];
+  const queryClient = useQueryClient();
 
   return useQuery<MockHistoryResult>(
     queryKey,
@@ -57,6 +58,7 @@ export const useMockBadgeHistory = (address?: Address, options?: { first?: numbe
     },
     {
       enabled: true,
+      placeholderData: () => queryClient.getQueryData<MockHistoryResult>(queryKey),
     },
   );
 };
